@@ -1,4 +1,4 @@
 streamlit
 pandas
-pymysql
+psycopg2-binary
 sqlalchemy
