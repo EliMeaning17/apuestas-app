@@ -6,7 +6,8 @@ import unicodedata
 # ==============================================================================
 # CONEXIÓN A LA BASE DE DATOS LOCAL (XAMPP / MYSQL)
 # ==============================================================================
-conn = st.connection("local_db", type="sql", url="mysql+pymysql://root:@localhost/apuestasdeportivas")
+# Conexión única y limpia para Supabase en la nube y en tu PC
+conn = st.connection("supabase", type="sql")
 
 # ==============================================================================
 # FUNCIÓN AUXILIAR PARA NORMALIZAR TEXTOS (ELIMINAR TILDES Y ACENTOS)
