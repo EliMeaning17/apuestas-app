@@ -1,6 +1,6 @@
 import streamlit as st
-import mysql.connector
 import pandas as pd
+from sqlalchemy import text
 
 # Configuración de la página para que no se vea mal en el celular
 st.set_page_config(page_title="Dashboard de Apuestas", layout="centered")
