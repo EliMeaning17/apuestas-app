@@ -37,7 +37,7 @@ st.markdown("""
     <style>
         .stApp {
             background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.85)), 
-                            url('https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=1931&auto=format&fit=crop');
+                              url('https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=1931&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -214,8 +214,13 @@ def formulario_equipos():
     
     ultimo_equipo = st.session_state.get('ultimo_equipo', '')
     
-    query_ligas = "SELECT id, nombre FROM ligas ORDER BY id ASC"
-    df_ligas = conn.query(query_ligas, ttl=0)
+    try:
+        query_ligas = "SELECT id, nombre FROM ligas ORDER BY id ASC"
+        df_ligas = conn.query(query_ligas, ttl=0)
+    except Exception as e:
+        st.error(f"Error detallado de conexión con Supabase (Ligas): {e}")
+        return
+
     ligas = df_ligas.to_dict('records')
     liga_nombres = {liga['id']: liga['nombre'] for liga in ligas}
     
@@ -243,8 +248,11 @@ def formulario_equipos():
             GROUP BY nombre, liga_id
             ORDER BY nombre ASC
         """
-        df_equipos = conn.query(query_equipos, params={"liga_id": id_a_consultar}, ttl=0)
-        equipos = df_equipos.to_dict('records')
+        try:
+            df_equipos = conn.query(query_equipos, params={"liga_id": id_a_consultar}, ttl=0)
+            equipos = df_equipos.to_dict('records')
+        except Exception as e:
+            st.error(f"Error detallado de conexión con Supabase (Equipos): {e}")
 
     nombres_equipos = [eq['nombre'] for eq in equipos] if equipos else []
     
@@ -326,17 +334,17 @@ def formulario_equipos():
                         }
                     )
                     s.commit()
-                st.success("¡Estadísticas guardadas con éxito en el sistema local!")
+                st.success("¡Estadísticas guardadas con éxito en el sistema!")
                 st.session_state['ultimo_equipo'] = equipo_analizado
             except Exception as e:
-                st.error(f"Error al guardar los datos: {e}")
+                st.error(f"Error detallado al guardar los datos en Supabase: {e}")
 
 # ==============================================================================
 # VISTA 3: VISUALIZADOR GENERAL DE LA BASE DE DATOS
 # ==============================================================================
 def visualizador_base_datos():
     st.markdown("<h2>Monitoreo de Base de Datos - Estadísticas Registradas</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #b0b0b0;'>Consulta en tiempo real todos los registros almacenados en MySQL (XAMPP).</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #b0b0b0;'>Consulta en tiempo real todos los registros almacenados en Supabase.</p>", unsafe_allow_html=True)
     
     query_datos = "SELECT * FROM estadisticas_equipos ORDER BY id DESC"
     
@@ -351,7 +359,7 @@ def visualizador_base_datos():
             st.info("No hay registros guardados todavía en la base de datos.")
             
     except Exception as e:
-        st.error(f"Error al cargar los datos desde MySQL: {e}")
+        st.error(f"Error detallado de conexión con Supabase (Visualizador): {e}")
 
 # ==============================================================================
 # VISTA 4: COMPARADOR DE EQUIPOS
@@ -360,8 +368,12 @@ def comparar_equipos():
     st.markdown("<h2>⚔️ Comparativa Directa de Equipos por Competición</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #b0b0b0;'>Filtra por competición superior y selecciona dos equipos para contraponer sus promedios e historiales.</p>", unsafe_allow_html=True)
     
-    query_ligas = "SELECT id, nombre FROM ligas ORDER BY id ASC"
-    df_ligas = conn.query(query_ligas, ttl=0)
+    try:
+        query_ligas = "SELECT id, nombre FROM ligas ORDER BY id ASC"
+        df_ligas = conn.query(query_ligas, ttl=0)
+    except Exception as e:
+        st.error(f"Error detallado de conexión con Supabase (Comparativa Ligas): {e}")
+        return
     
     if df_ligas.empty:
         st.info("No hay ligas registradas en la base de datos.")
@@ -384,7 +396,11 @@ def comparar_equipos():
         liga_1_id_consultar = mapeo_copas.get(liga_1_id_raw, liga_1_id_raw)
         
         query_eq1 = "SELECT nombre FROM equipos WHERE liga_id = :lid ORDER BY nombre ASC"
-        df_eq1 = conn.query(query_eq1, params={"lid": liga_1_id_consultar}, ttl=0)
+        try:
+            df_eq1 = conn.query(query_eq1, params={"lid": liga_1_id_consultar}, ttl=0)
+        except Exception as e:
+            st.error(f"Error detallado de conexión con Supabase (Eq 1): {e}")
+            df_eq1 = pd.DataFrame()
         lista_equipos_1 = df_eq1['nombre'].tolist() if not df_eq1.empty else []
         
         equipo_1 = st.selectbox("Selecciona el Equipo 1:", options=lista_equipos_1, key="eq_1_sel") if lista_equipos_1 else None
@@ -396,7 +412,11 @@ def comparar_equipos():
         liga_2_id_consultar = mapeo_copas.get(liga_2_id_raw, liga_2_id_raw)
         
         query_eq2 = "SELECT nombre FROM equipos WHERE liga_id = :lid ORDER BY nombre ASC"
-        df_eq2 = conn.query(query_eq2, params={"lid": liga_2_id_consultar}, ttl=0)
+        try:
+            df_eq2 = conn.query(query_eq2, params={"lid": liga_2_id_consultar}, ttl=0)
+        except Exception as e:
+            st.error(f"Error detallado de conexión con Supabase (Eq 2): {e}")
+            df_eq2 = pd.DataFrame()
         lista_equipos_2 = df_eq2['nombre'].tolist() if not df_eq2.empty else []
         
         equipo_2 = st.selectbox("Selecciona el Equipo 2:", options=lista_equipos_2, key="eq_2_sel") if lista_equipos_2 else None
@@ -408,8 +428,12 @@ def comparar_equipos():
         st.warning("⚠️ Has seleccionado el mismo equipo en ambos lados. Por favor elige clubes distintos para comparar.")
         return
         
-    query_match = "SELECT * FROM estadisticas_equipos ORDER BY id DESC"
-    df_todos_partidos = conn.query(query_match, ttl=0)
+    try:
+        query_match = "SELECT * FROM estadisticas_equipos ORDER BY id DESC"
+        df_todos_partidos = conn.query(query_match, ttl=0)
+    except Exception as e:
+        st.error(f"Error detallado de conexión con Supabase (Partidos Comparativa): {e}")
+        return
     
     def filtrar_partidos_equipo(df, nombre_equipo):
         if df.empty:
@@ -501,8 +525,12 @@ def calculadora_probabilidades():
     st.markdown("<h2>📈 Calculadora Avanzada de Probabilidades y Mercados</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: #b0b0b0;'>Analiza las probabilidades de gol por tiempo, mercados específicos y todas las estadísticas detalladas.</p>", unsafe_allow_html=True)
     
-    query_equipos_bd = "SELECT DISTINCT equipo_analizado FROM estadisticas_equipos ORDER BY equipo_analizado ASC"
-    df_nombres = conn.query(query_equipos_bd, ttl=0)
+    try:
+        query_equipos_bd = "SELECT DISTINCT equipo_analizado FROM estadisticas_equipos ORDER BY equipo_analizado ASC"
+        df_nombres = conn.query(query_equipos_bd, ttl=0)
+    except Exception as e:
+        st.error(f"Error detallado de conexión con Supabase (Calculadora Nombres): {e}")
+        return
     
     if df_nombres.empty:
         st.info("No hay datos suficientes para ejecutar cálculos de probabilidad.")
@@ -512,8 +540,12 @@ def calculadora_probabilidades():
     
     equipo_sel = st.selectbox("Selecciona un equipo para evaluar sus tendencias de apuestas:", options=lista_equipos)
     
-    query_match = "SELECT * FROM estadisticas_equipos"
-    df_todos = conn.query(query_match, ttl=0)
+    try:
+        query_match = "SELECT * FROM estadisticas_equipos"
+        df_todos = conn.query(query_match, ttl=0)
+    except Exception as e:
+        st.error(f"Error detallado de conexión con Supabase (Calculadora Partidos): {e}")
+        return
     
     if not df_todos.empty:
         norm_sel = normalizar_texto(equipo_sel)
