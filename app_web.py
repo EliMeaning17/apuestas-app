@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
-from sqlalchemy import text
 
-# Configuración de la página para que no se vea mal en el celular
+# Configuración de la página para dispositivos móviles
 st.set_page_config(page_title="Dashboard de Apuestas", layout="centered")
 
 st.title("⚽ Predicciones y Estadísticas")
@@ -20,7 +19,7 @@ except Exception as e:
     df = pd.DataFrame()
 
 if not df.empty:
-    # Selector de equipo desde el celular
+    # Selector de equipo
     equipos_disponibles = df['equipo_analizado'].unique()
     equipo_seleccionado = st.selectbox("Selecciona un equipo:", equipos_disponibles)
     
@@ -30,7 +29,7 @@ if not df.empty:
     st.subheader(f"📊 Estadísticas de {equipo_seleccionado}")
     st.dataframe(df_equipo[['fecha_partido', 'rival', 'competicion', 'resultado_equipo', 'goles_favor', 'goles_contra']])
     
-    # Cálculo automático de promedios y probabilidades básicas
+    # Cálculo automático de promedios
     prom_gf = df_equipo['goles_favor'].mean()
     prom_gc = df_equipo['goles_contra'].mean()
     
