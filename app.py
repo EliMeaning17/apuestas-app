@@ -177,7 +177,7 @@ def mostrar_login():
             nueva_pass = st.text_input("Nueva Contraseña", type="password", key="np1")
             conf_pass = st.text_input("Confirmar Nueva Contraseña", type="password", key="np2")
             
-                    if st.button("Actualizar y Entrar", use_container_width=True):
+            if st.button("Actualizar y Entrar", use_container_width=True):
             tiene_letras = any(c.isalpha() for c in nueva_pass)
             tiene_numeros = any(c.isdigit() for c in nueva_pass)
             tiene_especiales = not nueva_pass.isalnum()
