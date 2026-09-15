@@ -210,30 +210,29 @@ def mostrar_login():
 
 
     else:
-    st.markdown("<p style='text-align: center; color: #8b949e;'>Ingrese sus credenciales del proyecto.</p>", unsafe_allow_html=True)
-    usuario = st.text_input("Usuario", key="lg1")
-    password = st.text_input("Contraseña", type="password", key="lg2")
-            
-    if st.button("Ingresar al Sistema", use_container_width=True):
-try:
-query = f"SELECT * FROM usuarios_sistema WHERE username = '{usuario}' AND password = '{password}'"
-df_user = conn.query(query, ttl=0)
-                    
-    if not df_user.empty:
-          debe_cambiar=df_user.iloc[0]ñ['cambio_pendiente']
-      if debe_cambiar:
-      st.session_state['cambio_pendiente'] = True
-      st.session_state['usuario_temporal'] = usuario
-      st.rerun()
- else:
-   st.session_state['autenticado'] = True
-   st.session_state['usuario_actual'] = usuario  
-   st.rerun()                            
-  
- else:
-     st.error("❌ Usuario o contraseña incorrectos.")
-     except Exception as e:
-     st.error(f"Error de conexión: {e}")
+            st.markdown("<p style='text-align: center; color: #8b949e;'>Ingrese sus credenciales del proyecto.</p>", unsafe_allow_html=True)
+            usuario = st.text_input("Usuario", key="lg1")
+            password = st.text_input("Contraseña", type="password", key="lg2")
+
+            if st.button("Ingresar al Sistema", use_container_width=True):
+                try:
+                    query = f"SELECT * FROM usuarios_sistema WHERE username = '{usuario}' AND password = '{password}'"
+                    df_user = conn.query(query, ttl=0)
+
+                    if not df_user.empty:
+                        debe_cambiar = df_user.iloc[0]['cambio_pendiente']
+                        if debe_cambiar:
+                            st.session_state['cambio_pendiente'] = True
+                            st.session_state['usuario_temporal'] = usuario
+                            st.rerun()
+                        else:
+                            st.session_state['autenticado'] = True
+                            st.session_state['usuario_actual'] = usuario
+                            st.rerun()
+                    else:
+                        st.error("❌ Usuario o contraseña incorrectos.")
+                except Exception as e:
+                    st.error(f"Error de conexión: {e}")
 
 
         
