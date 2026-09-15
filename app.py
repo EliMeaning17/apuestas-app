@@ -187,12 +187,9 @@ def mostrar_login():
                 conf_pass = st.text_input("Confirmar Nueva Contraseña", type="password")
                 btn_cambiar = st.form_submit_button("Actualizar y Entrar", use_container_width=True)
                 
-                if btn_cambiar:
-                    # Validaciones lógicas
+                                if btn_cambiar:
                     tiene_letras = any(c.isalpha() for c in nueva_pass)
                     tiene_numeros = any(c.isdigit() for c in nueva_pass)
-                    
-                    # Validar si contiene caracteres especiales raros (solo permitimos alfanuméricos)
                     tiene_caracteres_especiales = not nueva_pass.isalnum()
                     
                     if len(nueva_pass) < 6:
@@ -204,13 +201,15 @@ def mostrar_login():
                     elif nueva_pass != conf_pass:
                         st.error("❌ Las contraseñas no coinciden.")
                     else:
+                        # >>> AQUÍ ES DONDE VA EL CÓDIGO NUEVO (EL TRY-EXCEPT CON text()) <<<
                         try:
-                            # CORRECCIÓN TÉCNICA: Usamos conexión directa o manejamos el UPDATE sin esperar filas de retorno
+                            from sqlalchemy import text
+                            
                             with conn.connect() as connection:
                                 connection.execute(
-                                    f"UPDATE usuarios_sistema SET password = '{nueva_pass}', cambio_pendiente = FALSE WHERE username = '{st.session_state['usuario_temporal']}'"
+                                    text(f"UPDATE usuarios_sistema SET password = '{nueva_pass}', cambio_pendiente = FALSE WHERE username = '{st.session_state['usuario_temporal']}'")
                                 )
-                                connection.commit() # Confirmamos los cambios en la base de datos
+                                connection.commit()
                             
                             st.success("¡Contraseña actualizada con éxito!")
                             st.session_state['autenticado'] = True
@@ -219,6 +218,7 @@ def mostrar_login():
                             st.rerun()
                         except Exception as e:
                             st.error(f"Error al actualizar la contraseña en la base de datos: {e}")
+
 
         
         # PANTALLA 1: Login normal consultando Supabase
