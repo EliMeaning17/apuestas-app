@@ -205,6 +205,12 @@ if not st.session_state['autenticado']:
 # BARRA LATERAL DE NAVEGACIÓN GLOBAL (SIDEBAR)
 # ==============================================================================
 st.sidebar.title("⚽ Menú YANESBET")
+st.sidebar.markdown("---")
+st.sidebar.markdown(f"👤 Conectado como: **{st.session_state.get('usuario_actual', '').capitalize()}**")
+
+if st.sidebar.button("🚪 Cerrar Sesión", use_container_width=True):
+    st.session_state['autenticado'] = False
+    st.rerun()
 
 if 'pagina' not in st.session_state:
     st.session_state['pagina'] = 'inicio'
@@ -352,8 +358,30 @@ def formulario_equipos():
             st.write("")
             st.write("")
             submitted = st.form_submit_button("Guardar Estadísticas")
+
+
+
+
         
         if submitted:
+
+        if submitted:
+            # --- PEGAS LAS VALIDACIONES AQUÍ ---
+            errores = []
+            if tiros_a_puerta > tiros_totales:
+                errores.append("⚠️ Los 'Tiros a Puerta' no pueden ser mayores que los 'Tiros Totales'.")
+            
+            if errores:
+                st.error("Se detectaron errores en los datos:")
+                for err in errores:
+                    st.warning(err)
+            else:
+                # --- Y AQUÍ DEJAS TU CÓDIGO ORIGINAL QUE YA TENÍAS ---
+                if goles_favor > goles_contra:
+                    resultado_equipo = 'Victoria'
+                # ... (lo demás que ya tenías)
+
+
             if goles_favor > goles_contra:
                 resultado_equipo = 'Victoria'
             elif goles_favor < goles_contra:
