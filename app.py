@@ -191,24 +191,25 @@ def mostrar_login():
                 btn_cambiar = st.form_submit_button("Actualizar y Entrar", use_container_width=True)
                 
         if btn_cambiar:
-                    tiene_letras = any(c.isalpha() for c in nueva_pass)
-                    tiene_numeros = any(c.isdigit() for c in nueva_pass)
+ tiene_letras = any(c.isalpha() for c in nueva_pass)
+
+ tiene_numeros = any(c.isdigit() for c in nueva_pass)
                     tiene_caracteres_especiales = not nueva_pass.isalnum()
                     
-                    if len(nueva_pass) < 6:
-                        st.error("❌ La contraseña debe tener al menos 6 caracteres.")
-                    elif not (tiene_letras and tiene_numeros):
-                        st.error("❌ La contraseña debe contener una combinación de letras y números.")
-                    elif tiene_caracteres_especiales:
-                        st.error("❌ Por favor, no utilices símbolos especiales, tildes o espacios.")
-                    elif nueva_pass != conf_pass:
-                        st.error("❌ Las contraseñas no coinciden.")
-                    else:
-                        # >>> AQUÍ ES DONDE VA EL CÓDIGO NUEVO (EL TRY-EXCEPT CON text()) <<<
-                        try:
-                            from sqlalchemy import text
+  if len(nueva_pass) < 6:
+  st.error("❌ La contraseña debe tener al menos 6 caracteres.")
+ elif not (tiene_letras and tiene_numeros):
+  st.error("❌ La contraseña debe contener una combinación de letras y números.")
+ elif tiene_caracteres_especiales:
+   st.error("❌ Por favor, no utilices símbolos especiales, tildes o espacios.")
+  elif nueva_pass != conf_pass:
+    st.error("❌ Las contraseñas no coinciden.")
+      else:
+  # >>> AQUÍ ES DONDE VA EL CÓDIGO NUEVO (EL TRY-EXCEPT CON text()) <<<
+     try:
+         from sqlalchemy import text
                             
-                            with conn.connect() as connection:
+  with conn.connect() as connection:
                                 connection.execute(
                                     text(f"UPDATE usuarios_sistema SET password = '{nueva_pass}', cambio_pendiente = FALSE WHERE username = '{st.session_state['usuario_temporal']}'")
                                 )
