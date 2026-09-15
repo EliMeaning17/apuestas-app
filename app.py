@@ -170,52 +170,66 @@ def mostrar_login():
     with col2:
         st.markdown("<h1 style='text-align: center;'>🔐 YANESBET - Acceso Restringido</h1>", unsafe_allow_html=True)
         
-        # PANTALLA 2: Cambio obligatorio de contraseña con indicaciones visuales
         if st.session_state['cambio_pendiente']:
             st.warning("⚠️ Es tu primer ingreso. Por seguridad, debes actualizar tu contraseña.")
+            st.info("Requisitos: Mínimo 6 caracteres, letras (mayúsculas/minúsculas), números y sin caracteres especiales.")
             
-            st.info("""
-            **Requisitos de la nueva contraseña:**
-            * Mínimo **6 caracteres**.
-            * Debe incluir **letras** (mayúsculas y minúsculas) y **números**.
-            * ⚠️ **Evita** usar caracteres especiales raros (como `!`, `@`, `#`, `$`, `%`, espacios, tildes o eñes) para prevenir errores de sistema.
-            """)
+            nueva_pass = st.text_input("Nueva Contraseña", type="password", key="np1")
+            conf_pass = st.text_input("Confirmar Nueva Contraseña", type="password", key="np2")
             
-            with st.form("form_cambio_clave"):
-                nueva_pass = st.text_input("Nueva Contraseña", type="password")
-                conf_pass = st.text_input("Confirmar Nueva Contraseña", type="password")
-                btn_cambiar = st.form_submit_button("Actualizar y Entrar", use_container_width=True)
+            if st.button("Actualizar y Entrar", use_container_width=True):
+                tiene_letras = any(c.isalpha() for c in nueva_pass)
+                tiene_numeros = any(c.isdigit() for c in nueva_pass)
+                tiene_especiales = not nueva_pass.isalnum()
                 
-                if btn_cambiar:
-                    tiene_letras = any(c.isalpha() for c in nueva_pass)
-                    tiene_numeros = any(c.isdigit() for c in nueva_pass)
-                    tiene_caracteres_especiales = not nueva_pass.isalnum()
+                if len(nueva_pass) < 6:
+                    st.error("❌ Mínimo 6 caracteres.")
+                elif not (tiene_letras and tiene_numeros):
+                    st.error("❌ Debe contener letras y números.")
+                elif tiene_especiales:
+                    st.error("❌ No utilices símbolos especiales o espacios.")
+                elif nueva_pass != conf_pass:
+                    st.error("❌ Las contraseñas no coinciden.")
+                else:
+                    try:
+                        from sqlalchemy import text
+                        with conn.connect() as connection:
+                            connection.execute(
+                                text(f"UPDATE usuarios_sistema SET password = '{nueva_pass}', cambio_pendiente = FALSE WHERE username = '{st.session_state['usuario_temporal']}'")
+                            )
+                            connection.commit()
+                        st.success("¡Contraseña actualizada!")
+                        st.session_state['autenticado'] = True
+                        st.session_state['usuario_actual'] = st.session_state['usuario_temporal']
+                        st.session_state['cambio_pendiente'] = False
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error en BD: {e}")
+        else:
+            st.markdown("<p style='text-align: center; color: #8b949e;'>Ingrese sus credenciales del proyecto.</p>", unsafe_allow_html=True)
+            usuario = st.text_input("Usuario", key="lg1")
+            password = st.text_input("Contraseña", type="password", key="lg2")
+            
+            if st.button("Ingresar al Sistema", use_container_width=True):
+                try:
+                    query = f"SELECT * FROM usuarios_sistema WHERE username = '{usuario}' AND password = '{password}'"
+                    df_user = conn.query(query, ttl=0)
                     
-                    if len(nueva_pass) < 6:
-                        st.error("❌ La contraseña debe tener al menos 6 caracteres.")
-                    elif not (tiene_letras and tiene_numeros):
-                        st.error("❌ La contraseña debe contener una combinación de letras y números.")
-                    elif tiene_caracteres_especiales:
-                        st.error("❌ Por favor, no utilices símbolos especiales, tildes o espacios.")
-                    elif nueva_pass != conf_pass:
-                        st.error("❌ Las contraseñas no coinciden.")
-                    else:
-                        try:
-                            from sqlalchemy import text
-                            
-                            with conn.connect() as connection:
-                                connection.execute(
-                                    text(f"UPDATE usuarios_sistema SET password = '{nueva_pass}', cambio_pendiente = FALSE WHERE username = '{st.session_state['usuario_temporal']}'")
-                                )
-                                connection.commit()
-                            
-                            st.success("¡Contraseña actualizada con éxito!")
-                            st.session_state['autenticado'] = True
-                            st.session_state['usuario_actual'] = st.session_state['usuario_temporal']
-                            st.session_state['cambio_pendiente'] = False
+                    if not df_user.empty:
+                        debe_cambiar = df_user.iloc[0]['cambio_pendiente']
+                        if debe_cambiar:
+                            st.session_state['cambio_pendiente'] = True
+                            st.session_state['usuario_temporal'] = usuario
                             st.rerun()
-                        except Exception as e:
-                            st.error(f"Error al actualizar la contraseña en la base de datos: {e}")
+                        else:
+                            st.session_state['autenticado'] = True
+                            st.session_state['usuario_actual'] = usuario
+                            st.rerun()
+                    else:
+                        st.error("❌ Usuario o contraseña incorrectos.")
+                except Exception as e:
+                    st.error(f"Error de conexión: {e}")
+
         
         # PANTALLA 1: Login normal consultando Supabase
         else:
