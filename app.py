@@ -151,6 +151,56 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+
+
+# ==============================================================================
+# 1. NUEVO: SISTEMA DE AUTENTICACIÓN (LOGIN DE SEGURIDAD)
+# ==============================================================================
+
+# Verificamos en el estado de la sesión si el usuario ya se autenticó previamente
+if 'autenticado' not in st.session_state:
+    st.session_state['autenticado'] = False
+
+def mostrar_login():
+    """Función que dibuja la interfaz de inicio de sesión restringido."""
+    st.markdown("<br><br>", unsafe_allow_html=True) # Añade espacio vertical superior
+    col1, col2, col3 = st.columns([1, 2, 1]) # Creamos columnas para centrar el formulario
+    
+    with col2:
+        st.markdown("<h1 style='text-align: center;'>🔐 YANESBET - Acceso Restringido</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: #8b949e;'>Ingrese sus credenciales autorizadas.</p>", unsafe_allow_html=True)
+        
+        # Formulario de credenciales para evitar recargas automáticas
+        with st.form("form_login"):
+            usuario = st.text_input("Usuario")
+            password = st.text_input("Contraseña", type="password") # Oculta los caracteres de la contraseña
+            submit_login = st.form_submit_button("Ingresar al Sistema", use_container_width=True)
+            
+            if submit_login:
+                # Diccionario con los usuarios y contraseñas permitidos en el proyecto
+                usuarios_validos = {
+                    "elian": "yanes2026",
+                    "admin": "futbol123",
+                    "colaborador": "apuesta2026"
+                }
+                
+                # Validación de las credenciales ingresadas
+                if usuario in usuarios_validos and usuarios_validos[usuario] == password:
+                    st.session_state['autenticado'] = True          # Cambiamos el estado a verdadero
+                    st.session_state['usuario_actual'] = usuario      # Guardamos quién ingresó
+                    st.rerun()                                        # Recargamos la app para entrar
+                else:
+                    st.error("❌ Usuario o contraseña incorrectos.") # Mensaje si fallan los datos
+
+# Bloque de parada: Si el usuario NO está autenticado, mostramos el login y cortamos la ejecución de la app
+if not st.session_state['autenticado']:
+    mostrar_login()
+    st.stop()
+
+
+
+
+
 # ==============================================================================
 # BARRA LATERAL DE NAVEGACIÓN GLOBAL (SIDEBAR)
 # ==============================================================================
