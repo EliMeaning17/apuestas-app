@@ -183,49 +183,57 @@ def mostrar_login():
                 tiene_especiales = not nueva_pass.isalnum()
                 
             if len(nueva_pass) < 6:
-            st.error("❌ Mínimo 6 caracteres.")
-       elif not (tiene_letras and tiene_numeros):
-       st.error("❌ Debe contener letras y números.")
-    elif tiene_especiales:
-       st.error("❌ No utilices símbolos especiales o espacios.")
-   elif nueva_pass != conf_pass:
-       st.error("❌ Las contraseñas no coinciden.")
+                st.error("❌ Mínimo 6 caracteres.")
+             elif not (tiene_letras and tiene_numeros):
+                st.error("❌ Debe contener letras y números.")
+             elif tiene_especiales:
+                st.error("❌ No utilices símbolos especiales o espacios.")
+            elif nueva_pass != conf_pass:
+                st.error("❌ Las contraseñas no coinciden.")
     else:
     try:
-  from sqlalchemy import text
-   with conn.connect() as connection:
+       from sqlalchemy import text
+       with conn.connect() as connection:
                            
-      connection.execute(
+       connection.execute(
  text(f"UPDATE usuarios_sistema SET password = '{nueva_pass}', cambio_pendiente = FALSE WHERE username = '{st.session_state['usuario_temporal']}'")
                             )
                                  
       connection.commit()
-                                        st.success("¡Contraseña actualizada!")                       st.session_state['autenticado'] = True                            st.session_state['usuario_actual'] =      st.session_state['usuario_temporal']                                                     st.session_state['cambio_pendiente'] = False
-    st.rerun()
-    except Exception as e:
-   st.error(f"Error en BD: {e}")
+     st.success("¡Contraseña actualizada!") 
+      st.session_state['autenticado'] = True                            
+     st.session_state['usuario_actual'] =  
+     st.session_state['usuario_temporal']                                                        
+     st.session_state['cambio_pendiente'] = False
+     st.rerun()
+     except Exception as e:
+     st.error(f"Error en BD: {e}")
+
     else:
-st.markdown("<p style='text-align: center; color: #8b949e;'>Ingrese sus credenciales del proyecto.</p>", unsafe_allow_html=True)
-usuario = st.text_input("Usuario", key="lg1")
-password = st.text_input("Contraseña", type="password", key="lg2")
+    st.markdown("<p style='text-align: center; color: #8b949e;'>Ingrese sus credenciales del proyecto.</p>", unsafe_allow_html=True)
+    usuario = st.text_input("Usuario", key="lg1")
+    password = st.text_input("Contraseña", type="password", key="lg2")
             
-if st.button("Ingresar al Sistema", use_container_width=True):
+    if st.button("Ingresar al Sistema", use_container_width=True):
 try:
 query = f"SELECT * FROM usuarios_sistema WHERE username = '{usuario}' AND password = '{password}'"
 df_user = conn.query(query, ttl=0)
                     
- if not df_user.empty:
-    debe_cambiar = df_user.iloc[0]['cambio_pendiente']
- if debe_cambiar:
-st.session_state['cambio_pendiente'] = True            st.session_state['usuario_temporal'] = usuario
-    st.rerun()
+    if not df_user.empty:
+          debe_cambiar=df_user.iloc[0]ñ['cambio_pendiente']
+      if debe_cambiar:
+      st.session_state['cambio_pendiente'] = True
+      st.session_state['usuario_temporal'] = usuario
+      st.rerun()
  else:
-                            st.session_state['autenticado'] = True                         st.session_state['usuario_actual'] = usuario
-     st.rerun()
+   st.session_state['autenticado'] = True
+   st.session_state['usuario_actual'] = usuario  
+   st.rerun()                            
+  
  else:
-st.error("❌ Usuario o contraseña incorrectos.")
-except Exception as e:
-st.error(f"Error de conexión: {e}")
+     st.error("❌ Usuario o contraseña incorrectos.")
+     except Exception as e:
+     st.error(f"Error de conexión: {e}")
 
 
         
