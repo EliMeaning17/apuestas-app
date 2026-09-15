@@ -232,41 +232,7 @@ def mostrar_login():
                     st.error(f"Error de conexión: {e}")
 
 
-
         
-        # PANTALLA 1: Login normal consultando Supabase
-        else:
-            st.markdown("<p style='text-align: center; color: #8b949e;'>Ingrese sus credenciales del proyecto.</p>", unsafe_allow_html=True)
-            with st.form("form_login"):
-                usuario = st.text_input("Usuario")
-                password = st.text_input("Contraseña", type="password")
-                submit_login = st.form_submit_button("Ingresar al Sistema", use_container_width=True)
-                
-                if submit_login:
-                    try:
-                        query = f"SELECT * FROM usuarios_sistema WHERE username = '{usuario}' AND password = '{password}'"
-                        df_user = conn.query(query, ttl=0)
-                        
-                        if not df_user.empty:
-                            debe_cambiar = df_user.iloc[0]['cambio_pendiente']
-                            
-                            if debe_cambiar:
-                                st.session_state['cambio_pendiente'] = True
-                                st.session_state['usuario_temporal'] = usuario
-                                st.rerun()
-                            else:
-                                st.session_state['autenticado'] = True
-                                st.session_state['usuario_actual'] = usuario
-                                st.rerun()
-                        else:
-                            st.error("❌ Usuario o contraseña incorrectos.")
-                    except Exception as e:
-                        st.error(f"Error de conexión al verificar el usuario: {e}")
-
-
-
-   
-
 # Bloque de parada de seguridad
 if not st.session_state['autenticado']:
     mostrar_login()
