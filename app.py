@@ -186,7 +186,7 @@ def mostrar_login():
                 st.error("❌ Mínimo 6 caracteres.")
             elif not (tiene_letras and tiene_numeros):
                 st.error("❌ Debe contener letras y números.")
-             elif tiene_especiales:
+            elif tiene_especiales:
                 st.error("❌ No utilices símbolos especiales o espacios.")
             elif nueva_pass != conf_pass:
                 st.error("❌ Las contraseñas no coinciden.")
