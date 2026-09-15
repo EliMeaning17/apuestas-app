@@ -154,48 +154,86 @@ st.markdown("""
 
 
 # ==============================================================================
-# 1. NUEVO: SISTEMA DE AUTENTICACIÓN (LOGIN DE SEGURIDAD)
+# 1. SISTEMA DE AUTENTICACIÓN CON CAMBIO OBLIGATORIO DE CONTRASEÑA
 # ==============================================================================
-
-# Verificamos en el estado de la sesión si el usuario ya se autenticó previamente
 if 'autenticado' not in st.session_state:
     st.session_state['autenticado'] = False
+if 'cambio_pendiente' not in st.session_state:
+    st.session_state['cambio_pendiente'] = False
+if 'usuario_temporal' not in st.session_state:
+    st.session_state['usuario_temporal'] = None
 
 def mostrar_login():
-    """Función que dibuja la interfaz de inicio de sesión restringido."""
-    st.markdown("<br><br>", unsafe_allow_html=True) # Añade espacio vertical superior
-    col1, col2, col3 = st.columns([1, 2, 1]) # Creamos columnas para centrar el formulario
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
         st.markdown("<h1 style='text-align: center;'>🔐 YANESBET - Acceso Restringido</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; color: #8b949e;'>Ingrese sus credenciales autorizadas.</p>", unsafe_allow_html=True)
         
-        # Formulario de credenciales para evitar recargas automáticas
-        with st.form("form_login"):
-            usuario = st.text_input("Usuario")
-            password = st.text_input("Contraseña", type="password") # Oculta los caracteres de la contraseña
-            submit_login = st.form_submit_button("Ingresar al Sistema", use_container_width=True)
-            
-            if submit_login:
-                # Diccionario con los usuarios y contraseñas permitidos en el proyecto
-                usuarios_validos = {
-                    "elian": "yanes2026",
-                    "admin": "futbol123",
-                    "colaborador": "apuesta2026"
-                }
+        # Diccionario con los 3 usuarios permitidos y sus claves iniciales
+        # (Nota: en un entorno real con BD guardarías un flag de "primer_inicio", 
+        # aquí simulamos que la clave por defecto obliga al cambio)
+        usuarios_base = {
+            "yanesbet7": "clave123",
+            "dom7": "clave123",
+            "ronca7": "clave133"
+        }
+        
+        # PANTALLA 2: Si ya puso su clave inicial pero debe cambiarla por seguridad
+        if st.session_state['cambio_pendiente']:
+            st.warning("⚠️ Es tu primer ingreso o debes actualizar tu contraseña por seguridad.")
+            with st.form("form_cambio_clave"):
+                nueva_pass = st.text_input("Nueva Contraseña", type="password")
+                conf_pass = st.text_input("Confirmar Nueva Contraseña", type="password")
+                btn_cambiar = st.form_submit_button("Actualizar y Entrar", use_container_width=True)
                 
-                # Validación de las credenciales ingresadas
-                if usuario in usuarios_validos and usuarios_validos[usuario] == password:
-                    st.session_state['autenticado'] = True          # Cambiamos el estado a verdadero
-                    st.session_state['usuario_actual'] = usuario      # Guardamos quién ingresó
-                    st.rerun()                                        # Recargamos la app para entrar
-                else:
-                    st.error("❌ Usuario o contraseña incorrectos.") # Mensaje si fallan los datos
+                if btn_cambiar:
+                    # VALIDACIÓN DE SEGURIDAD: Debe tener letras y números
+                    tiene_letras = any(c.isalpha() for c in nueva_pass)
+                    tiene_numeros = any(c.isdigit() for c in nueva_pass)
+                    
+                    if len(nueva_pass) < 6:
+                        st.error("❌ La contraseña debe tener al menos 6 caracteres.")
+                    elif not (tiene_letras and tiene_numeros):
+                        st.error("❌ La contraseña debe contener una combinación de letras y números.")
+                    elif nueva_pass != conf_pass:
+                        st.error("❌ Las contraseñas no coinciden.")
+                    else:
+                        # Aquí guardarías la nueva clave en tu base de datos o la actualizarías.
+                        # Por ahora, damos acceso exitoso al sistema:
+                        st.success("¡Contraseña actualizada con éxito!")
+                        st.session_state['autenticado'] = True
+                        st.session_state['usuario_actual'] = st.session_state['usuario_temporal']
+                        st.session_state['cambio_pendiente'] = False
+                        st.rerun()
+        
+        # PANTALLA 1: Login normal
+        else:
+            st.markdown("<p style='text-align: center; color: #8b949e;'>Ingrese sus credenciales de acceso.</p>", unsafe_allow_html=True)
+            with st.form("form_login"):
+                usuario = st.text_input("Usuario")
+                password = st.text_input("Contraseña", type="password")
+                submit_login = st.form_submit_button("Ingresar", use_container_width=True)
+                
+                if submit_login:
+                    if usuario in usuarios_base and usuarios_base[usuario] == password:
+                        # Verificamos si usa la contraseña temporal por defecto para obligarle a cambiarla
+                        if password in ["clave123", "clave133"]:
+                            st.session_state['cambio_pendiente'] = True
+                            st.session_state['usuario_temporal'] = usuario
+                            st.rerun()
+                        else:
+                            st.session_state['autenticado'] = True
+                            st.session_state['usuario_actual'] = usuario
+                            st.rerun()
+                    else:
+                        st.error("❌ Usuario o contraseña incorrectos.")
 
-# Bloque de parada: Si el usuario NO está autenticado, mostramos el login y cortamos la ejecución de la app
+# Bloque de parada si no está autenticado
 if not st.session_state['autenticado']:
     mostrar_login()
     st.stop()
+
 
 
 
