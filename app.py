@@ -402,8 +402,6 @@ def formulario_equipos():
 
         
         if submitted:
-
-        if submitted:
             # --- PEGAS LAS VALIDACIONES AQUÍ ---
             errores = []
             if tiros_a_puerta > tiros_totales:
