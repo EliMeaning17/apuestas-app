@@ -170,33 +170,47 @@ def mostrar_login():
     with col2:
         st.markdown("<h1 style='text-align: center;'>🔐 YANESBET - Acceso Restringido</h1>", unsafe_allow_html=True)
         
-        # PANTALLA 2: Si el usuario debe cambiar su contraseña obligatoriamente
+                # PANTALLA 2: Cambio obligatorio de contraseña con indicaciones visuales
         if st.session_state['cambio_pendiente']:
             st.warning("⚠️ Es tu primer ingreso. Por seguridad, debes actualizar tu contraseña.")
+            
+            # --- INDICACIONES CLARAS PARA EL USUARIO ---
+            st.info("""
+            **Requisitos de la nueva contraseña:**
+            * Mínimo **6 caracteres**.
+            * Debe incluir **letras** (mayúsculas y minúsculas) y **números**.
+            * ⚠️ **Evita** usar caracteres especiales raros (como `!`, `@`, `#`, `$`, `%`, espacios, tildes o eñes) para prevenir errores de sistema.
+            """)
+            
             with st.form("form_cambio_clave"):
                 nueva_pass = st.text_input("Nueva Contraseña", type="password")
                 conf_pass = st.text_input("Confirmar Nueva Contraseña", type="password")
                 btn_cambiar = st.form_submit_button("Actualizar y Entrar", use_container_width=True)
                 
                 if btn_cambiar:
+                    # Validaciones lógicas
                     tiene_letras = any(c.isalpha() for c in nueva_pass)
                     tiene_numeros = any(c.isdigit() for c in nueva_pass)
+                    
+                    # Validar si contiene caracteres especiales raros (solo permitimos alfanuméricos)
+                    tiene_caracteres_especiales = not nueva_pass.isalnum()
                     
                     if len(nueva_pass) < 6:
                         st.error("❌ La contraseña debe tener al menos 6 caracteres.")
                     elif not (tiene_letras and tiene_numeros):
-                        st.error("❌ La contraseña debe contener letras y números.")
+                        st.error("❌ La contraseña debe contener una combinación de letras y números.")
+                    elif tiene_caracteres_especiales:
+                        st.error("❌ Por favor, no utilices símbolos especiales, tildes o espacios.")
                     elif nueva_pass != conf_pass:
                         st.error("❌ Las contraseñas no coinciden.")
                     else:
                         try:
-                            # Actualizamos la contraseña en Supabase y marcamos cambio_pendiente en FALSE
-                            query_update = f"""
-                                UPDATE usuarios_sistema 
-                                SET password = '{nueva_pass}', cambio_pendiente = FALSE 
-                                WHERE username = '{st.session_state['usuario_temporal']}'
-                            """
-                            conn.query(query_update, ttl=0)
+                            # CORRECCIÓN TÉCNICA: Usamos conexión directa o manejamos el UPDATE sin esperar filas de retorno
+                            with conn.connect() as connection:
+                                connection.execute(
+                                    f"UPDATE usuarios_sistema SET password = '{nueva_pass}', cambio_pendiente = FALSE WHERE username = '{st.session_state['usuario_temporal']}'"
+                                )
+                                connection.commit() # Confirmamos los cambios en la base de datos
                             
                             st.success("¡Contraseña actualizada con éxito!")
                             st.session_state['autenticado'] = True
@@ -205,6 +219,7 @@ def mostrar_login():
                             st.rerun()
                         except Exception as e:
                             st.error(f"Error al actualizar la contraseña en la base de datos: {e}")
+
         
         # PANTALLA 1: Login normal consultando Supabase
         else:
