@@ -230,6 +230,7 @@ def mostrar_login():
                 except Exception as e:
                     st.error(f"Error de conexión: {e}")
 
+
         
         # PANTALLA 1: Login normal consultando Supabase
         else:
