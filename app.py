@@ -182,7 +182,7 @@ def mostrar_login():
                 tiene_numeros = any(c.isdigit() for c in nueva_pass)
                 tiene_especiales = not nueva_pass.isalnum()
                 
-                    if len(nueva_pass) < 6:
+                if len(nueva_pass) < 6:
             st.error("❌ Mínimo 6 caracteres.")
         elif not (tiene_letras and tiene_numeros):
             st.error("❌ Debe contener letras y números.")
