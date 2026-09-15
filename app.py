@@ -182,7 +182,10 @@ def mostrar_login():
             * ⚠️ **Evita** usar caracteres especiales raros (como `!`, `@`, `#`, `$`, `%`, espacios, tildes o eñes) para prevenir errores de sistema.
             """)
             
-            with st.form("form_cambio_clave"):
+        
+
+
+ with st.form("form_cambio_clave"):
                 nueva_pass = st.text_input("Nueva Contraseña", type="password")
                 conf_pass = st.text_input("Confirmar Nueva Contraseña", type="password")
                 btn_cambiar = st.form_submit_button("Actualizar y Entrar", use_container_width=True)
