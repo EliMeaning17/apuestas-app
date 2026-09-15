@@ -170,7 +170,7 @@ def mostrar_login():
     with col2:
         st.markdown("<h1 style='text-align: center;'>🔐 YANESBET - Acceso Restringido</h1>", unsafe_allow_html=True)
         
-                if st.session_state['cambio_pendiente']:
+        if st.session_state['cambio_pendiente']:
             st.warning("⚠️ Es tu primer ingreso. Por seguridad, debes actualizar tu contraseña.")
             st.info("Requisitos: Mínimo 6 caracteres, letras (mayúsculas/minúsculas), números y sin caracteres especiales.")
             
