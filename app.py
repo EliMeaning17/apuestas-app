@@ -184,7 +184,7 @@ def mostrar_login():
                 
             if len(nueva_pass) < 6:
                 st.error("❌ Mínimo 6 caracteres.")
-             elif not (tiene_letras and tiene_numeros):
+            elif not (tiene_letras and tiene_numeros):
                 st.error("❌ Debe contener letras y números.")
              elif tiene_especiales:
                 st.error("❌ No utilices símbolos especiales o espacios.")
