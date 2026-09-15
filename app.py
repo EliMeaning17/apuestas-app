@@ -722,7 +722,7 @@ def calculadora_probabilidades():
         st.metric(label=f"📉 Probabilidad UNDER -{linea_seleccionada} Goles (Global)", value=f"{prob_under_total}%", delta=f"{partidos_under_total} partidos")
 
 # ==============================================================================
-# ENRUTAMIENTO PRINCIPAL DE LA APLICACIÓN EN STREAMLIT
+# ENRUTADOR PRINCIPAL DE VISTAS (ROUTER)
 # ==============================================================================
 if st.session_state['pagina'] == 'inicio':
     inicio()
@@ -736,11 +736,10 @@ elif st.session_state['pagina'] == 'calculadora':
     calculadora_probabilidades()
 
 # ==============================================================================
-# PIE DE PÁGINA INSTITUCIONAL (FOOTER)
+# PIE DE PÁGINA (FOOTER)
 # ==============================================================================
 st.markdown("""
     <div class="footer">
-        <p>Creado para <span>YANESBET</span> &copy; 2026 | Todos los derechos reservados.</p>
-        <p style='font-size: 0.8rem; color: #888;'>Plataforma avanzada de análisis y pronósticos de rendimiento futbolístico.</p>
+        Desarrollado con <span>Streamlit</span> y <span>Supabase</span> | Sistema de Apuestas Deportivas <span>YANESBET</span> ⚽
     </div>
 """, unsafe_allow_html=True)
